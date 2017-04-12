@@ -2,6 +2,7 @@ var AWS = require("aws-sdk");
 var rekognition = new AWS.Rekognition({region: 'us-west-2'});
 
 var params = {
+  Attributes: ["ALL"],
   Image: {
     S3Object: {
       Bucket: "node-sdk-sample-1bdafef2-f2b3-4a78-82f6-b96ffc9f0849",
