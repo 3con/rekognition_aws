@@ -2,7 +2,14 @@ var AWS = require("aws-sdk");
 var rekognition = new AWS.Rekognition({region: 'us-west-2'});
 var fs = require('fs');
 
-var file = fs.readFile('./outan_confused04.JPG', function (err, data) {
+if (process.argv.length < 3) {
+  console.log("usage: node index.js filename");
+  process.exit();
+} else {
+  file_name = process.argv[2];
+}
+
+var file = fs.readFile(file_name, function (err, data) {
   if (err) { console.log("error happend while read the file");}
   else {
     console.log("file read succuss");
@@ -23,5 +30,3 @@ var file = fs.readFile('./outan_confused04.JPG', function (err, data) {
     });
   }
 });
-
-
