@@ -30,7 +30,7 @@ var AWS = require("aws-sdk");
 var rekognition = new AWS.Rekognition({region: 'us-west-2'});
 var fs = require('fs');
 
-var file = fs.readFile(file_name, function (err, data) {
+fs.readFile(file_name, function (err, data) {
   if (err) { console.log("error happend while read the file");}
   else {
     console.log("file read succuss");
