@@ -47,6 +47,10 @@ var formatted;
 var file_name;
 var dt;
 var interval;
+var AWS = require("aws-sdk");
+var rekognition = new AWS.Rekognition({region: 'us-west-2'});
+var fs = require('fs');
+
 function takePicture() {
   interval = setInterval(function() {
     dt = new Date();
@@ -56,35 +60,32 @@ function takePicture() {
         'fswebcam'
       , ['--no-banner', file_name]
       , function (me) {
+          fs.readFile(file_name, function (err, data) {
+            if (err) { console.log("error happend while read the file" + file_name);}
+            else {
+              console.log("file read succuss");
+              var params = {
+                Attributes: [
+                    "ALL"
+                ],
+                Image: {
+                    Bytes: data
+                }
+              }
+              rekognition.detectFaces(params, function(err, data) {
+                if (err) console.log(err, err.stack);
+                else {
+                  console.log(JSON.stringify(data, null, 5));
+                }
+              });
+            }
+          });
+
         console.log('--- stdout ---');
         console.log(me.stdout);
         console.error('--- stderr ---');
         console.error(me.stderr);
       });
-    var AWS = require("aws-sdk");
-    var rekognition = new AWS.Rekognition({region: 'us-west-2'});
-    var fs = require('fs');
-
-    fs.readFile(file_name, function (err, data) {
-      if (err) { console.log("error happend while read the file" + file_name);}
-      else {
-        console.log("file read succuss");
-        var params = {
-          Attributes: [
-              "ALL"
-          ],
-          Image: {
-              Bytes: data
-          }
-        }
-        rekognition.detectFaces(params, function(err, data) {
-          if (err) console.log(err, err.stack);
-          else {
-            console.log(JSON.stringify(data, null, 5));
-          }
-        });
-      }
-    });
   }, 5000);
 }
 
