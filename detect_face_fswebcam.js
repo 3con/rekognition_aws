@@ -1,4 +1,5 @@
 require('date-utils');
+var moment = require("moment");
 
 function execute(cmd, args, onEnd) {
   var spawn = require('child_process').spawn
@@ -22,13 +23,13 @@ board.on("ready", function() {
 
   // "calibrated" occurs once, at the beginning of a session,
   motion.on("calibrated", function() {
-    console.log("calibrated", Date.now());
+    console.log("calibrated", moment().format());
   });
 
   // "motionstart" events are fired when the "calibrated"
   // proximal area is disrupted, generally by some form of movement
   motion.on("motionstart", function() {
-    console.log("Detecting moving object", Date.now());
+    console.log("Detecting moving object. Start taking pitcure.", moment().format());
     led.on();
     takePicture();
   });
@@ -36,7 +37,7 @@ board.on("ready", function() {
   // "motionend" events are fired following a "motionstart" event
   // when no movement has occurred in X ms
   motion.on("motionend", function() {
-    console.log("No moving objects detected", Date.now());
+    console.log("No moving objects detected. stop taking picture.", moment().format());
     led.off();
     clearInterval(interval);
  });
