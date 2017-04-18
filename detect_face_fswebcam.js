@@ -1,9 +1,5 @@
 require('date-utils');
 
-var dt = new Date();
-var formatted = dt.toFormat("YYYYMMDDHH24MISS");
-
-
 function execute(cmd, args, onEnd) {
   var spawn = require('child_process').spawn
     , child = spawn(cmd, args)
@@ -14,9 +10,13 @@ function execute(cmd, args, onEnd) {
   child.stderr.on('data', function (data) { me.stderr += data.toString(); });
   child.stdout.on('end', function () { onEnd(me) });
 }
-var file_name = './pic/fswebcam_' + formatted + '.jpg';
- 
+var formatted;
+var file_name;
+var dt;
 setInterval(function() {
+  dt = new Date();
+  formatted = dt.toFormat("YYYYMMDDHH24MISS");
+  file_name = '/media/sdcard/fswebcam_' + formatted + '.jpg';
   new execute(
       'fswebcam'
     , ['--no-banner', file_name]
