@@ -16,7 +16,6 @@ var five = require("johnny-five");
 var edison = require("edison-io");
 var board = new five.Board({io:new edison()});
 board.on("ready", function() {
-
   // Create a new `motion` hardware instance.
   var motion = new five.Motion(2);
   var led    = new five.Led(3);
@@ -29,7 +28,7 @@ board.on("ready", function() {
   // "motionstart" events are fired when the "calibrated"
   // proximal area is disrupted, generally by some form of movement
   motion.on("motionstart", function() {
-    console.log("Detecting moving object. Start taking pitcure.", moment().format());
+    console.log("人検知、写真撮影開始", moment().format());
     led.on();
     takePicture();
   });
@@ -37,11 +36,10 @@ board.on("ready", function() {
   // "motionend" events are fired following a "motionstart" event
   // when no movement has occurred in X ms
   motion.on("motionend", function() {
-    console.log("No moving objects detected. stop taking picture.", moment().format());
+    console.log("人がいなくなったため、撮影終了", moment().format());
     led.off();
     clearInterval(interval);
- });
-
+  });
 });
 
 var formatted;
@@ -76,7 +74,14 @@ function takePicture() {
               rekognition.detectFaces(params, function(err, data) {
                 if (err) console.log(err, err.stack);
                 else {
-                  console.log(JSON.stringify(data, null, 5));
+                  //console.log(JSON.stringify(data, null, 5));
+                  JSON.parse(JSON.stringify(data), function(key, value){
+                    if (key == "Emotions" || key == "AgeRange" || key == "smile" || key == "Gender") {
+                      console.log(key + ":")
+                      console.log(JSON.stringify(value,null,5));
+                    }
+                    return value;
+                  });
                 }
               });
             }
