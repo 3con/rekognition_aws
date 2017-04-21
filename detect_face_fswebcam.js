@@ -76,7 +76,7 @@ function takePicture() {
                 else {
                   //console.log(JSON.stringify(data, null, 5));
                   JSON.parse(JSON.stringify(data), function(key, value){
-                    if (key == "Emotions" || key == "AgeRange" || key == "smile" || key == "Gender") {
+                    if (key == "Emotions" || key == "AgeRange" || key == "Smile" || key == "Gender") {
                       console.log(key + ":")
                       console.log(JSON.stringify(value,null,5));
                     }
@@ -92,6 +92,6 @@ function takePicture() {
         console.error('--- stderr ---');
         console.error(me.stderr);
       });
-  }, 5000);
+  }, 2000);
 }
 
