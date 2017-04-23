@@ -14,7 +14,7 @@ var device = awsIot.device({
   keyPath: 'certs/edison1.private.key',
   certPath: 'certs/edison1.cert.pem',
   caPath: 'certs/root-CA.crt',
-  clientId: 'eison_pub_client',
+  clientId: 'edison_pub_client',
   region: 'ap-northeast-1'
 });
 
@@ -42,10 +42,26 @@ board.on("ready", function() {
     console.log("calibrated", moment().format());
   });
 
+var IncomingWebhook = require('@slack/client').IncomingWebhook;
+// 設定を.envからロード
+require('dotenv').config();
+
+var url = process.env.SLACK_WEBHOOK_URL || ''; //see section above on sensitive data
+
+var webhook = new IncomingWebhook(url);
+var message = "人検知、写真撮影開始"
+
   // "motionstart" events are fired when the "calibrated"
   // proximal area is disrupted, generally by some form of movement
   motion.on("motionstart", function() {
     console.log("人検知、写真撮影開始", moment().format());
+    webhook.send(message, function(err, res) {
+      if (err) {
+        console.log('Error:', err);
+      } else {
+        console.log('Message sent: ', res);
+      }
+    });
     led.on();
     takePicture();
   });
@@ -72,7 +88,7 @@ function takePicture() {
   interval = setInterval(function() {
     dt = new Date();
     formatted = dt.toFormat("YYYYMMDDHH24MISS");
-    file_name = '/media/sdcard/fswebcam_' + formatted + '.jpg';
+    file_name = '/media/sdcard/office_glico/fswebcam_' + formatted + '.jpg';
     new execute(
         'fswebcam'
       , ['--no-banner', file_name]
