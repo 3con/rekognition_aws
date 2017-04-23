@@ -1,6 +1,23 @@
 require('date-utils');
 var moment = require("moment");
 
+var topic = "nexway/officeglico"
+var AWS = require("aws-sdk");
+var rekognition = new AWS.Rekognition({region: 'us-west-2'});
+var fs = require('fs');
+var awsIot = require('aws-iot-device-sdk');
+var moment = require('moment');
+var request = require('request');
+
+// Define paramerters to publish a message
+var device = awsIot.device({
+  keyPath: 'certs/edison1.private.key',
+  certPath: 'certs/edison1.cert.pem',
+  caPath: 'certs/root-CA.crt',
+  clientId: 'eison_pub_client',
+  region: 'ap-northeast-1'
+});
+
 function execute(cmd, args, onEnd) {
   var spawn = require('child_process').spawn
     , child = spawn(cmd, args)
@@ -40,16 +57,17 @@ board.on("ready", function() {
     led.off();
     clearInterval(interval);
   });
+
+  // Connect to Message Broker
+  device.on('connect', function() {
+    console.log('Connected to Message Broker.');
+  });
 });
 
 var formatted;
 var file_name;
 var dt;
 var interval;
-var AWS = require("aws-sdk");
-var rekognition = new AWS.Rekognition({region: 'us-west-2'});
-var fs = require('fs');
-
 function takePicture() {
   interval = setInterval(function() {
     dt = new Date();
@@ -74,6 +92,8 @@ function takePicture() {
               rekognition.detectFaces(params, function(err, data) {
                 if (err) console.log(err, err.stack);
                 else {
+                  composeRecordAndPublish(data);
+                  
                   //console.log(JSON.stringify(data, null, 5));
                   JSON.parse(JSON.stringify(data), function(key, value){
                     if (key == "Emotions" || key == "AgeRange" || key == "Smile" || key == "Gender") {
@@ -95,3 +115,23 @@ function takePicture() {
   }, 2000);
 }
 
+function composeRecordAndPublish(data) {
+//   JSON.parse(JSON.stringify(data), function(key, value){
+//     if (key == "Emotions" || key == "AgeRange" || key == "Smile" || key == "Gender") {
+//       console.log(key + ":")
+//       console.log(JSON.stringify(value,null,5));
+//     }
+//     return value;
+//   });
+ 
+//    var record = {
+//      "timestamp": moment().toISOString(),   // ISO8601 format
+//      "value": value,
+//      "light_status": "on"
+//    };
+
+  // Serialize record to JSON format and publish a message
+  var message = JSON.stringify(data);
+  console.log("Publish: " + topic +": " + message);
+  device.publish(topic, message);
+}
