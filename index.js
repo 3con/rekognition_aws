@@ -87,8 +87,8 @@ var interval;
 function takePicture() {
   interval = setInterval(function() {
     dt = new Date();
-    formatted = dt.toFormat("YYYYMMDDHH24MISS");
-    file_name = '/media/sdcard/office_glico/fswebcam_' + formatted + '.jpg';
+    timestamp = dt.toFormat("YYYYMMDDHH24MISS");
+    file_name = '/media/sdcard/office_glico/fswebcam_' + timestamp + '.jpg';
     new execute(
         'fswebcam'
       , ['--no-banner', file_name]
@@ -108,16 +108,17 @@ function takePicture() {
               rekognition.detectFaces(params, function(err, data) {
                 if (err) console.log(err, err.stack);
                 else {
-                  composeRecordAndPublish(data);
+                  composeRecordAndPublish(data, timestamp);
                   
                   //console.log(JSON.stringify(data, null, 5));
-                  JSON.parse(JSON.stringify(data), function(key, value){
-                    if (key == "Emotions" || key == "AgeRange" || key == "Smile" || key == "Gender") {
-                      console.log(key + ":")
-                      console.log(JSON.stringify(value,null,5));
-                    }
-                    return value;
-                  });
+                  //  B
+                //  JSON.parse(JSON.stringify(data), function(key, value){
+                //    if (key == "Emotions" || key == "AgeRange" || key == "Smile" || key == "Gender") {
+                //      console.log(key + ":")
+                //      console.log(JSON.stringify(value,null,5));
+                //    }
+                //    return value;
+                //  });
                 }
               });
             }
@@ -131,23 +132,38 @@ function takePicture() {
   }, 2000);
 }
 
-function composeRecordAndPublish(data) {
-//   JSON.parse(JSON.stringify(data), function(key, value){
-//     if (key == "Emotions" || key == "AgeRange" || key == "Smile" || key == "Gender") {
-//       console.log(key + ":")
-//       console.log(JSON.stringify(value,null,5));
-//     }
-//     return value;
-//   });
- 
+function composeRecordAndPublish(data, timestamp) {
+  JSON.parse(JSON.stringify(data), function(key, value){
+    if (key == "Emotions" || key == "AgeRange" || key == "Smile" || key == "Gender") {
+      console.log(key + ":")
+      console.log(JSON.stringify(value,null,4));
+    }
+    return value;
+  });
+
 //    var record = {
 //      "timestamp": moment().toISOString(),   // ISO8601 format
 //      "value": value,
 //      "light_status": "on"
 //    };
 
+  console.log("in composeReordAnPublish method");
+  //console.log(JSON.stringify(data,null,4));
+ 
+  if(data.FaceDetails.length ==0) {
+    console.log("顔写真ではないため、DBに保存しない。");
+  } else {
+      var message = JSON.stringify(data);
+      console.log("Publish: " + topic +"/" + timestamp +": " + message);
+      device.publish(topic + "/" + timestamp, message);
+  }
   // Serialize record to JSON format and publish a message
-  var message = JSON.stringify(data);
-  console.log("Publish: " + topic +": " + message);
-  device.publish(topic, message);
+ // JSON.stringify(data, function(key, value) {
+ //   if(key == 'FaceDetails' && value.length == 0 ) {}
+ //   else {
+ //     var message = JSON.stringify(data);
+ //     console.log("Publish: " + topic +": " + message);
+ //     device.publish(topic, message);
+ //   }
+ // });
 }
